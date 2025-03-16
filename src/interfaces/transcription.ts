@@ -5,6 +5,8 @@ export interface Message {
 }
 
 export interface Transcription {
+    date: Date,
+    patient_id: string,
     conversation: Message[]
 }
 
