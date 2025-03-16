@@ -16,6 +16,7 @@ export const TranscriptionHealthCareSummaryTable = pgTable(
     {
         id: uuid("id").primaryKey().defaultRandom(),
         patientId: integer("patient_id").notNull(),
+        summary: text("summary").notNull(),
         topics: text("topics").array().notNull(),
         conditions: text("conditions").array().notNull(),
         followUpNeeded: boolean("follow_up_needed").notNull(),

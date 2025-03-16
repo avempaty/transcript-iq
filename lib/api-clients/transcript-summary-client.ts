@@ -1,21 +1,19 @@
-import APIClient from "./api-client";
-
-interface Message {
-    timestamp: Date,
-    speaker: "AI" | "Patient",
-    content: string
-}
-
-interface Transcription {
-    conversation: Message[]
-}
+import APIClient from "@/../lib/api-clients/api-client";
+import { Transcription, SummarizedContent } from "@/interfaces/transcription";
 
 class TranscriptionSummaryClient extends APIClient {
     constructor() {
-        super('/api')
+        super("/api");
     }
     //we will make a JSON transcription object that we can pass in here
-    async processTranscription(text: string) {
-
+    async processTranscription(transcription: Transcription) {
+        const data: SummarizedContent = await this.jsonPost(
+            "/summarize-transcription",
+            transcription
+        );
+        console.log(data);
+        return data;
     }
 }
+
+export default new TranscriptionSummaryClient();

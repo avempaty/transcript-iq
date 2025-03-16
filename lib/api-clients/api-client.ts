@@ -1,8 +1,6 @@
 /// <reference lib="dom" />
 
-// import ApiClient, { InvalidResponseError, StatusCodeError } from 'simple-api-client';
 import BaseError from "../base-error";
-// import { verifyPassword, hashPassword } from '@/lib/hash-password'
 
 class StatusCodeError extends BaseError<{ status: number; url: string }> {}
 class NetworkError extends BaseError<{ url: string }> {}
@@ -19,7 +17,7 @@ class APIClient {
             this.apiKey = apiKey;
         }
         this.defaultHeaders = {
-            // @ts-ignore
+            // @ts-expect-error
             "Content-Type": "application/json",
         };
     }
@@ -28,7 +26,7 @@ class APIClient {
         if (this.apiKey) {
             return {
                 ...this.defaultHeaders,
-                // @ts-ignore
+                // @ts-expect-error
                 Authorization: `Bearer ${this.apiKey}`,
             };
         }
@@ -45,7 +43,7 @@ class APIClient {
         } catch (err) {
             // network error
             // TODO: retry
-            throw NetworkError.wrap(err as any, "network error", { url });
+            throw NetworkError.wrap(err as Error, "network error", { url });
         }
 
         if (!response.ok) {
@@ -62,7 +60,7 @@ class APIClient {
             bodyText = await response.text();
         } catch (err) {
             throw NetworkError.wrap(
-                err as any,
+                err as Error,
                 "network error: receiving body",
                 { url }
             );
@@ -71,7 +69,7 @@ class APIClient {
             const bodyJSON = JSON.parse(bodyText);
             return bodyJSON;
         } catch (err) {
-            throw JSONParseError.wrap(err as any, "json parse error", {
+            throw JSONParseError.wrap(err as Error, "json parse error", {
                 bodyText,
             });
         }
@@ -82,7 +80,6 @@ class APIClient {
         body: {},
         init: Omit<RequestInit, "body" | "method"> = {}
     ) {
-        console.log(body);
         return this.jsonFetch(url, {
             ...init,
             method: "POST",
