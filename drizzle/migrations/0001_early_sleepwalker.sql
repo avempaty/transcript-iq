@@ -1,0 +1,1 @@
+ALTER TABLE "transcriptionSummary" RENAME TO "transcription_summary";
