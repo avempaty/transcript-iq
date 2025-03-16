@@ -17,7 +17,7 @@ class APIClient {
             this.apiKey = apiKey;
         }
         this.defaultHeaders = {
-            // @ts-expect-error
+            // @ts-expect-error Header refers to wrong Header class
             "Content-Type": "application/json",
         };
     }
@@ -26,7 +26,7 @@ class APIClient {
         if (this.apiKey) {
             return {
                 ...this.defaultHeaders,
-                // @ts-expect-error
+                // @ts-expect-error Header refers to wrong Header class
                 Authorization: `Bearer ${this.apiKey}`,
             };
         }
@@ -42,7 +42,6 @@ class APIClient {
             });
         } catch (err) {
             // network error
-            // TODO: retry
             throw NetworkError.wrap(err as Error, "network error", { url });
         }
 
@@ -77,7 +76,7 @@ class APIClient {
 
     async jsonPost(
         url: string,
-        body: {},
+        body: unknown,
         init: Omit<RequestInit, "body" | "method"> = {}
     ) {
         return this.jsonFetch(url, {

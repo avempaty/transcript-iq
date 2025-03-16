@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
         body = await req.json();
     } catch (err) {
         return NextResponse.json(
-            { error: "body is not json" },
+            { error:  `body is not a json ${err}` },
             { status: 400 }
         );
     }
