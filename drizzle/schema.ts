@@ -4,10 +4,10 @@ import {
     text,
     timestamp,
     uniqueIndex,
-    index,
     uuid,
     integer,
     boolean,
+    jsonb,
 } from "drizzle-orm/pg-core";
 
 // Define the table structure using the newer API.
@@ -19,9 +19,9 @@ export const TranscriptionHealthCareSummaryTable = pgTable(
         summary: text("summary").notNull(),
         topics: text("topics").array().notNull(),
         conditions: text("conditions").array().notNull(),
-        followUpNeeded: boolean("follow_up_needed").notNull(),
+        followUpNeeded: text("follow_up_needed").array().notNull(),
         humanReviewNeeded: boolean("human_review_needed").notNull(),
-        priority: text("priority").notNull(),
+        priority: integer("priority").notNull(),
     },
     (transcriptionSummary) => {
         return {
@@ -30,4 +30,14 @@ export const TranscriptionHealthCareSummaryTable = pgTable(
             ),
         };
     }
+);
+
+export const fhirResources = pgTable(
+    "fhir_resources",
+    {
+        id: serial("id").primaryKey(),
+        patientId: integer("patient_id").notNull(),
+        resourceType: jsonb("resource_type").notNull(),
+        createdAt: timestamp('created_at').defaultNow().notNull(),
+    },
 );

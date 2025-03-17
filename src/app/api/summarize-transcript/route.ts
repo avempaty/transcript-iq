@@ -1,6 +1,12 @@
+import { db } from "@drizzle/db";
+import { TranscriptionHealthCareSummaryTable } from "@drizzle/schema";
 import OpenAIClient from "@/../lib/api-clients/openai-client";
 import { NextRequest, NextResponse } from "next/server";
-import { Message, Transcription } from "@/interfaces/transcription";
+import {
+    Message,
+    Transcription,
+    SummarizedContent,
+} from "@/interfaces/transcription";
 import BaseError from "@/../lib/base-error";
 export async function POST(req: NextRequest) {
     let body: {
@@ -10,7 +16,7 @@ export async function POST(req: NextRequest) {
         body = await req.json();
     } catch (err) {
         return NextResponse.json(
-            { error:  `body is not a json ${err}` },
+            { error: `body is not a json ${err}` },
             { status: 400 }
         );
     }
@@ -31,11 +37,32 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const parsedContent = JSON.parse(rawContent);
-        //console.log(parsedContent);
+        const parsedContent: SummarizedContent = JSON.parse(rawContent);
+        console.log(parsedContent);
+
+        const summarizedContent = await db
+            .insert(TranscriptionHealthCareSummaryTable)
+            .values({
+                patientId: Number(parsedContent.patientId),
+                topics: parsedContent.topics,
+                priority: parsedContent.priority,
+                summary: parsedContent.summary,
+                followUpNeeded: parsedContent.followUpNeeded,
+                humanReviewNeeded: parsedContent.humanReviewNeeded,
+                conditions: parsedContent.conditions,
+            })
+            .returning()
+            .catch((err) => {
+                console.log(err);
+                throw BaseError.wrap(err, "failed to insert summarized content", {
+                    parsedContent,
+                    status: 500,
+                });
+            });
+
         return NextResponse.json(
             {
-                parsedContent,
+                summarizedContent,
             },
             { status: 201 }
         );

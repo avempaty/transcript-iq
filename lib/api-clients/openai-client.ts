@@ -20,19 +20,13 @@ The structured data you must extract includes:
 - Follow-ups Needed: List of actionable follow-up steps required (e.g., "schedule a call", "adjust medication").
 - Human Review Needed: Boolean indicating if human intervention is required.
 - Human Review Justification: Brief explanation of why human review is needed (only if humanReviewNeeded is true).
-- Priority: Urgency level indicating how quickly follow-up is needed ("high", "medium", or "low").
+- Priority: Urgency level indicating how quickly follow-up is needed (0: high, 1: medium, or 2: low).
 - FHIR Resource Types: List of relevant FHIR resource types that this information could map to (e.g., "Condition", "Observation", "CarePlan").
 
 Priority guidelines:
-- High: Immediate attention needed (24 hours or less) - severe symptoms, distress, or safety concerns
-- Medium: Follow-up within 2-3 days - moderate symptoms or concerns
-- Low: Routine follow-up (within 1-2 weeks) - minor issues or general check-in
-`;
-
-const genUserPrompt = (formattedTranscription: string) => `
-[Transcript]
-
-${formattedTranscription}
+- 0: Immediate attention needed (24 hours or less) - severe symptoms, distress, or safety concerns
+- 1: Follow-up within 2-3 days - moderate symptoms or concerns
+- 2: Routine follow-up (within 1-2 weeks) - minor issues or general check-in
 
 [Output Format]
 
@@ -42,23 +36,26 @@ ${formattedTranscription}
   "summary": string,
   "conditions": string[],
   "topics": string[],
-  "followUps": string[],
+  "followUpNeeded": string[],
   "humanReviewNeeded": boolean,
-  "priority": "high" | "medium" | "low"
+  "priority": 0 | 1 | 2
 }
 `;
+
+const genUserPrompt = (formattedTranscription: string) => `
+[Transcript]
+
+${formattedTranscription}`;
 
 class OpenAIClient extends APIClient {
     constructor(apiKey: string) {
         super("https://api.openai.com/v1/chat/completions", apiKey);
     }
 
-    formatTranscription(
-        transcription: Transcription
-    ): string {
-        const transcriptionHeaderString = `Patient ID: ${transcription.patient_id}\nDate: ${new Date(
-            transcription.date
-        ).toISOString()}`;
+    formatTranscription(transcription: Transcription): string {
+        const transcriptionHeaderString = `Patient ID: ${
+            transcription.patient_id
+        }\nDate: ${new Date(transcription.date).toISOString()}`;
 
         const conversationString = transcription.conversation
             .map((msg) => {
@@ -69,8 +66,8 @@ class OpenAIClient extends APIClient {
                 return `${memo}\n${item}`;
             }, "");
 
-        return `${transcriptionHeaderString}\n\n${conversationString}`
-    }   
+        return `${transcriptionHeaderString}\n\n${conversationString}`;
+    }
 
     async summarizeTranscription(transcription: Transcription) {
         if (
@@ -82,7 +79,9 @@ class OpenAIClient extends APIClient {
             );
         }
 
-        const formattedTranscription = await this.formatTranscription(transcription);
+        const formattedTranscription = await this.formatTranscription(
+            transcription
+        );
         //console.log(formattedTranscription)
 
         const body = {

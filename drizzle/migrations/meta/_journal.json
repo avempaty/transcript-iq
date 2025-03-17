@@ -15,6 +15,27 @@
       "when": 1742087577215,
       "tag": "0001_early_sleepwalker",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1742184730085,
+      "tag": "0002_last_mordo",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1742185584772,
+      "tag": "0003_crazy_micromacro",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1742186369906,
+      "tag": "0004_unique_vengeance",
+      "breakpoints": true
     }
   ]
 }

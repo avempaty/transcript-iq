@@ -1,11 +1,13 @@
 import exampleTranscription from './fixtures/example-transcription';
 import openaiClient from '../openai-client';
-//import { Transcription } from '@/interfaces/transcription';
 
 test('formatTranscription', async () => {
   const formattedTranscription = openaiClient.formatTranscription(exampleTranscription);
   expect(formattedTranscription).toMatchInlineSnapshot(`
-"
+"Patient ID: 123456
+Date: 2025-03-15T10:00:00.000Z
+
+
 [2025-03-15T10:00:00.000Z] AI: Hello, how can I assist you today?
 [2025-03-15T10:00:15.000Z] Patient: Hi, I'm feeling a bit anxious lately.
 [2025-03-15T10:00:30.000Z] AI: I'm sorry to hear that. Can you tell me more about what you're feeling?

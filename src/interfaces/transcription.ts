@@ -11,11 +11,11 @@ export interface Transcription {
 }
 
 export interface SummarizedContent {
-    patientId: string,
+    patientId: number,
     summary: string,
     topics: string[],
     conditions: string[],
     followUpNeeded: string[],
     humanReviewNeeded: boolean,
-    priority: "low" | "medium" | "high",
+    priority: 0 | 1 | 2,
 }
