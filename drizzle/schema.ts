@@ -24,13 +24,6 @@ export const TranscriptionHealthCareSummaryTable = pgTable(
         humanReviewNeeded: boolean("human_review_needed").notNull(),
         priority: integer("priority").notNull(),
     },
-    (transcriptionSummary) => {
-        return {
-            patientIdx: uniqueIndex("patient_idx").on(
-                transcriptionSummary.patientId
-            ),
-        };
-    }
 );
 
 export const FhirResourceTable = pgTable(
