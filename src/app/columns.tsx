@@ -25,9 +25,9 @@ export const columns: ColumnDef<SummarizedContent>[] = [
         header: "Conditions",
         cell: ({ row }) => (
             <div className="flex flex-wrap gap-2">
-                {row.original.topics.map((topic, index) => (
+                {row.original.conditions.map((condition, index) => (
                     <Badge key={index} variant="secondary">
-                        {topic}
+                        {condition}
                     </Badge>
                 ))}
             </div>
