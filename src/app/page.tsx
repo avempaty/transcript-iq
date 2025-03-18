@@ -1,6 +1,10 @@
 "use client";
 import { DataTable } from "./data-table";
-import { SummarizedContent, Transcription, FhirResources } from "@/interfaces/transcription";
+import {
+    SummarizedContent,
+    Transcription,
+    FhirResources,
+} from "@/interfaces/transcription";
 import { columns } from "./columns";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,7 +17,8 @@ export default function Home() {
         [] as SummarizedContent[]
     );
     const [transcriptionText, setTranscriptionText] = React.useState("");
-    const [selectedFhirResource, setSelectedFhirResource] = React.useState<FhirResources>({} as FhirResources)
+    const [selectedFhirResource, setSelectedFhirResource] =
+        React.useState<FhirResources>({} as FhirResources);
     const [validationError, setValidationError] = React.useState("");
 
     const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -30,7 +35,7 @@ export default function Home() {
                 setValidationError(
                     "Invalid JSON format. Please check your input"
                 );
-                console.log(err)
+                console.log(err);
                 return;
             }
 
@@ -51,11 +56,11 @@ export default function Home() {
             console.log(err);
         }
     }
-     // Handle row click and fetch FHIR resources
-     const handleRowClick = async (id: string) => {
+    // Handle row click and fetch FHIR resources
+    const handleRowClick = async (id: string) => {
         const fhirData = await TranscriptionSummaryClient.getFhirResource(id);
-        console.log(fhirData)
-        setSelectedFhirResource(fhirData)
+        console.log(fhirData);
+        setSelectedFhirResource(fhirData);
     };
 
     React.useEffect(() => {
@@ -80,12 +85,16 @@ export default function Home() {
                 <Textarea
                     placeholder="Transcription data in JSON format here..."
                     className="p-2 m-4 max-w-150 min-h-50 max-h-150"
-                    onChange={handleTextChange}
+                    onChange={(e) => {
+                        handleTextChange(e);
+                        setValidationError("");
+                    }}
                     value={transcriptionText}
                 ></Textarea>
-                {validationError !== "" ? <div className="text-red font-bold">{validationError}</div> : null }
+                {validationError !== "" ? (
+                    <div className="text-red-400 font-bold">{validationError}</div>
+                ) : null}
                 <div className="flex flex-row gap-2">
-                    <Button variant="outline">Generate New Transcript</Button>
                     <Button
                         onClick={generateTranscriptionSummary}
                         variant="outline"
@@ -94,7 +103,11 @@ export default function Home() {
                     </Button>
                 </div>
                 <div className="container mx-auto py-10">
-                    <DataTable columns={columns} data={summarizedContents} onRowClick={handleRowClick}/>
+                    <DataTable
+                        columns={columns}
+                        data={summarizedContents}
+                        onRowClick={handleRowClick}
+                    />
                 </div>
                 <FhirDataDisplay data={selectedFhirResource} />
             </div>

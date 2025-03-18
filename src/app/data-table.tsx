@@ -68,6 +68,7 @@ export function DataTable<TData, TValue>({
                                                 row.getIsSelected() &&
                                                 "selected"
                                             }
+                                            // @ts-expect-error Does not exist on row
                                             onClick={() => onRowClick(row.original.id)} // Handle row click
                                         >
                                             {row
