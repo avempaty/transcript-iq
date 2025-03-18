@@ -1,0 +1,1 @@
+ALTER TABLE "fhir_resources" ALTER COLUMN "resource_type" SET DATA TYPE jsonb[];

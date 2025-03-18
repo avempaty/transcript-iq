@@ -1,15 +1,22 @@
 import { db } from "@drizzle/db";
-import { TranscriptionHealthCareSummaryTable } from "@drizzle/schema";
+import {
+    FhirResourceTable,
+    TranscriptionHealthCareSummaryTable,
+} from "@drizzle/schema";
 import OpenAIClient from "@/../lib/api-clients/openai-client";
 import { NextRequest, NextResponse } from "next/server";
 import {
     Message,
     Transcription,
     SummarizedContent,
+    FhirResources,
+    MEDICAL_KEYWORDS,
 } from "@/interfaces/transcription";
 import BaseError from "@/../lib/base-error";
 export async function POST(req: NextRequest) {
     let body: {
+        date: string;
+        patient_id: string;
         conversation?: Message[];
     };
     try {
@@ -21,8 +28,18 @@ export async function POST(req: NextRequest) {
         );
     }
 
+    if (!isValidTranscription(body as Transcription)) {
+        return NextResponse.json(
+            {
+                error: "Invalud or irrelvant transcription. Please ensure its a post-surgery check-in conversation",
+            },
+            { status: 400 }
+        );
+    }
+
     try {
         const transcription = body as Transcription;
+        console.log(transcription);
         const openAIresponse = await OpenAIClient.summarizeTranscription(
             transcription
         );
@@ -40,10 +57,11 @@ export async function POST(req: NextRequest) {
         const parsedContent: SummarizedContent = JSON.parse(rawContent);
         console.log(parsedContent);
 
-        const summarizedContent = await db
+        const [summarizedContent] = await db
             .insert(TranscriptionHealthCareSummaryTable)
             .values({
                 patientId: Number(parsedContent.patientId),
+                date: new Date(transcription.date),
                 topics: parsedContent.topics,
                 priority: parsedContent.priority,
                 summary: parsedContent.summary,
@@ -54,15 +72,59 @@ export async function POST(req: NextRequest) {
             .returning()
             .catch((err) => {
                 console.log(err);
-                throw BaseError.wrap(err, "failed to insert summarized content", {
-                    parsedContent,
-                    status: 500,
-                });
+                throw BaseError.wrap(
+                    err,
+                    "failed to insert summarized content",
+                    {
+                        parsedContent,
+                        status: 500,
+                    }
+                );
+            });
+
+        const summarizedContentId = summarizedContent.id;
+
+        //Second OpenAPI Call for FHIR Resources
+        const OpenAIFhirResponse = await OpenAIClient.generateFhirResources(
+            transcription
+        );
+        const rawFhirContent = OpenAIFhirResponse.choices[0]?.message?.content;
+
+        if (!rawFhirContent) {
+            return NextResponse.json(
+                {
+                    error: "Invalid OpenAI response: Missing content",
+                },
+                { status: 500 }
+            );
+        }
+
+        const parsedFhirContent: FhirResources = JSON.parse(rawFhirContent);
+        console.log(parsedFhirContent);
+        await db
+            .insert(FhirResourceTable)
+            .values({
+                patientId: Number(parsedContent.patientId),
+                transcriptionSummaryId: summarizedContent.id,
+                createdAt: new Date(),
+                resourceType: parsedFhirContent.resourceType,
+            })
+            .returning()
+            .catch((err) => {
+                console.log(err);
+                throw BaseError.wrap(
+                    err,
+                    "failed to insert into fhir resources",
+                    {
+                        parsedFhirContent,
+                        status: 500,
+                    }
+                );
             });
 
         return NextResponse.json(
             {
-                summarizedContent,
+                summarizedContentId,
             },
             { status: 201 }
         );
@@ -78,4 +140,37 @@ export async function POST(req: NextRequest) {
             { status: 500 }
         );
     }
+}
+
+function containsMedicalKeywords(conversation: Message[]): boolean {
+    return conversation.some((msg) =>
+        MEDICAL_KEYWORDS.some((keyword) =>
+            msg.content.toLowerCase().includes(keyword)
+        )
+    );
+}
+
+function isValidMessageArray(data: Message[]): boolean {
+    return (
+        Array.isArray(data) &&
+        data.every(
+            (msg) =>
+                typeof msg === "object" &&
+                msg.timestamp &&
+                !isNaN(new Date(msg.timestamp).getTime()) &&
+                (msg.speaker === "AI" || msg.speaker === "Patient") &&
+                typeof msg.content === "string"
+        )
+    );
+}
+
+function isValidTranscription(data: Transcription): boolean {
+    return (
+        data &&
+        typeof data === "object" &&
+        typeof data.date === "string" &&
+        typeof data.patient_id === "string" &&
+        isValidMessageArray(data.conversation) &&
+        containsMedicalKeywords(data.conversation)
+    );
 }

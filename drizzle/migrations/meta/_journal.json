@@ -36,6 +36,20 @@
       "when": 1742186369906,
       "tag": "0004_unique_vengeance",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1742247390270,
+      "tag": "0005_organic_argent",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1742262147864,
+      "tag": "0006_modern_barracuda",
+      "breakpoints": true
     }
   ]
 }

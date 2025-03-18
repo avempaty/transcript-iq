@@ -6,7 +6,7 @@ import { sql } from "drizzle-orm"
 export const fhirResources = pgTable("fhir_resources", {
 	id: serial().primaryKey().notNull(),
 	patientId: integer("patient_id").notNull(),
-	resourceType: jsonb("resource_type").notNull(),
+	resourceType: jsonb("resource_type").array().notNull(),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 });
 

@@ -12,7 +12,7 @@ class APIClient {
     apiKey: string | undefined;
 
     constructor(host: string, apiKey?: string) {
-        this.host = "https://api.openai.com/v1/chat/completions";
+        this.host = host;
         if (apiKey) {
             this.apiKey = apiKey;
         }

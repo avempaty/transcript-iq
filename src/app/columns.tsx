@@ -1,6 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { SummarizedContent } from "@/interfaces/transcription";
+import { Button } from "@/components/ui/button";
 export const columns: ColumnDef<SummarizedContent>[] = [
     {
         accessorKey: "patientId",
@@ -35,7 +36,19 @@ export const columns: ColumnDef<SummarizedContent>[] = [
     {
         accessorKey: "followUpNeeded",
         header: "Follow Up Needed",
-        cell: ({ row }) => row.original.followUpNeeded.join(", "),
+        cell: ({ row }) => (
+            <div className="flex items-center">
+                {row.original.followUpNeeded.length > 0 ? (
+                    <div>
+                        <Button>Yes</Button>
+                    </div>
+                ) : (
+                    <div>
+                        <Button>No</Button>
+                    </div>
+                )}
+            </div>
+        ),
     },
     {
         accessorKey: "humanReviewNeeded",

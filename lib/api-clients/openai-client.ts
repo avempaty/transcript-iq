@@ -21,7 +21,6 @@ The structured data you must extract includes:
 - Human Review Needed: Boolean indicating if human intervention is required.
 - Human Review Justification: Brief explanation of why human review is needed (only if humanReviewNeeded is true).
 - Priority: Urgency level indicating how quickly follow-up is needed (0: high, 1: medium, or 2: low).
-- FHIR Resource Types: List of relevant FHIR resource types that this information could map to (e.g., "Condition", "Observation", "CarePlan").
 
 Priority guidelines:
 - 0: Immediate attention needed (24 hours or less) - severe symptoms, distress, or safety concerns
@@ -42,6 +41,57 @@ Priority guidelines:
 }
 `;
 
+const genFHhirSystemPrompt = () => `
+You are a medical assistant AI responsible for extracting structured FHIR (Fast Healthcare Interoperability Resources) data from conversations between patients and an AI assistant during post-surgery check-ins. Your primary goal is to analyze provided transcripts and output structured FHIR-compliant data in valid JSON format for seamless integration with healthcare systems.
+
+Guidelines:
+- Strictly output responses in valid JSON format as specified.
+- Preserve the patient ID exactly as provided in the transcript.
+- Extract relevant FHIR resources based on symptoms, concerns, and medical topics discussed.
+- If information is missing or unclear, return null or an empty object/array in the JSON response.
+- Focus on post-surgical recovery indicators, complications, or any follow-up needs.
+- Ensure accuracy and completeness when mapping extracted data to FHIR resources.
+- Use appropriate coding systems (e.g., SNOMED CT, LOINC, RxNorm) where applicable.
+
+Data Extraction Requirements:
+You must extract and structure the following FHIR-compliant data:
+
+1. Patient ID (patientId):
+   - Unique identifier exactly as provided in the transcript.
+
+2. Extracted FHIR Resources (resource_type):
+   The extracted resources should follow FHIR standards and be categorized under one of the following FHIR resource types:
+
+   - "Condition": Diagnosed or mentioned medical conditions.
+   - "Observation": Symptoms, reported pain levels, or vital signs.
+   - "MedicationRequest": Any prescribed, discussed, or adjusted medications.
+   - "Procedure": Any referenced surgical or medical procedures.
+   - "CarePlan": Recovery instructions, at-home care recommendations, or exercise regimens.
+   - "Appointment": Suggested or required follow-up appointments.
+
+   Each FHIR resource object must include the necessary attributes for integration into FHIR-based systems.
+
+[Output Format]
+Your response must strictly follow this JSON structure:
+
+{
+  "patientId": "string",
+  "resourceType": [
+    {
+      "type": "Condition" | "Observation" | "MedicationRequest" | "Procedure" | "CarePlan" | "Appointment",
+      "data": { "FHIR-compatible JSON object" }
+    }
+  ]
+}
+
+FHIR Mapping Considerations:
+- If a symptom or condition is mentioned (e.g., "pain", "swelling"), it should be mapped to "Condition" or "Observation".
+- If the conversation includes a new medication or dosage change, map it to "MedicationRequest".
+- If the patient discusses post-surgical care instructions, map them to "CarePlan".
+- If a follow-up appointment is needed, include "Appointment" with relevant scheduling details.
+
+Ensure that extracted data is structured correctly and follows FHIR compliance for integration into healthcare systems.
+`;
 const genUserPrompt = (formattedTranscription: string) => `
 [Transcript]
 
@@ -79,9 +129,7 @@ class OpenAIClient extends APIClient {
             );
         }
 
-        const formattedTranscription = await this.formatTranscription(
-            transcription
-        );
+        const formattedTranscription = this.formatTranscription(transcription);
         //console.log(formattedTranscription)
 
         const body = {
@@ -90,6 +138,34 @@ class OpenAIClient extends APIClient {
                 {
                     role: "system",
                     content: genSystemPrompt(),
+                },
+                {
+                    role: "user",
+                    content: genUserPrompt(formattedTranscription),
+                },
+            ],
+        };
+        return this.jsonPost("", body);
+    }
+
+    async generateFhirResources(transcription: Transcription) {
+        if (
+            !transcription.conversation ||
+            !Array.isArray(transcription.conversation)
+        ) {
+            throw new Error(
+                "Invalid transcription format: conversation must be an array"
+            );
+        }
+
+        const formattedTranscription = this.formatTranscription(transcription);
+
+        const body = {
+            model: "gpt-4",
+            messages: [
+                {
+                    role: "system",
+                    content: genFHhirSystemPrompt(),
                 },
                 {
                     role: "user",
