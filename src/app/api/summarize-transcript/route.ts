@@ -57,6 +57,22 @@ export async function POST(req: NextRequest) {
         const parsedContent: SummarizedContent = JSON.parse(rawContent);
         console.log(parsedContent);
 
+        if (
+            parsedContent.patientId == null ||
+            parsedContent.topics == null ||
+            parsedContent.summary == null ||
+            parsedContent.conditions == null
+        ) {
+            return NextResponse.json(
+                {
+                    error: "Please send more specific transcript, couldn't collect all information",
+                },
+                {
+                    status: 500,
+                }
+            );
+        }
+
         const [summarizedContent] = await db
             .insert(TranscriptionHealthCareSummaryTable)
             .values({
