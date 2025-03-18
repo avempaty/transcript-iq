@@ -3,6 +3,7 @@ import {
     Transcription,
     SummarizedContent,
     Message,
+    FhirResources,
     MEDICAL_KEYWORDS,
 } from "@/interfaces/transcription";
 
@@ -19,7 +20,7 @@ class TranscriptionSummaryClient extends APIClient {
         }
 
         const data = await this.jsonPost(
-            "/summarize-transcription",
+            "/summarize-transcript",
             transcription
         );
 
@@ -42,6 +43,20 @@ class TranscriptionSummaryClient extends APIClient {
         return summarizedContent;
     }
 
+    async getAllFhirResource() {
+        const fhirResource: FhirResources = await this.jsonFetch(
+            `/fhir-resources`
+        );
+        return fhirResource;
+    }
+
+    async getFhirResource(id: string) {
+        const fhirResource: FhirResources = await this.jsonFetch(
+            `/fhir-resources/${id}`
+        );
+        return fhirResource;
+    }
+    
     containsMedicalKeywords(conversation: Message[]): boolean {
         return conversation.some((msg) =>
             MEDICAL_KEYWORDS.some((keyword) =>

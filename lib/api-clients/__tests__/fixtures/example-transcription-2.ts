@@ -1,7 +1,7 @@
 import { Transcription } from "@/interfaces/transcription";
 
 const exampleTranscription2 = {
-    date: new Date("2025-03-17T09:45:00Z"),
+    date: "2025-03-17T09:45:00Z",
     patient_id: "456789",
     conversation: [
         {

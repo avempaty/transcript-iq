@@ -30,7 +30,28 @@ export interface FhirResources {
 }
 
 export const MEDICAL_KEYWORDS = [
-    "pain", "swelling", "infection", "fever", "wound", "stitches", "medication",
-    "recovery", "dressing", "suture", "mobility", "nausea", "vomiting", "surgery",
-    "healing", "complications", "follow-up", "doctor", "nurse"
+    "pain",
+    "swelling",
+    "infection",
+    "fever",
+    "wound",
+    "stitches",
+    "medication",
+    "recovery",
+    "dressing",
+    "suture",
+    "mobility",
+    "nausea",
+    "vomiting",
+    "surgery",
+    "healing",
+    "complications",
+    "follow-up",
+    "doctor",
+    "nurse",
+    "stress",
+    "blood",
+    "pressure",
+    "headaches",
+    "anxious",
 ];

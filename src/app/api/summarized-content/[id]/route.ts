@@ -7,7 +7,7 @@ export async function GET(
     { params }: { params: { id: string } } // The destructured context with params
 ) {
     try {
-        const conversationId = params.id;
+        const conversationId = await params.id;
         const summarizedContent = await db
             .select()
             .from(TranscriptionHealthCareSummaryTable)
